@@ -2,6 +2,7 @@ const socket = io('http://localhost:8080');
 const onStartButton = document.getElementById('onStart');
 const roomContainer = document.getElementById('room-container');
 
+const playersPerRoom = {};
 
 if (onStartButton != null) {
     const name = prompt('Please enter your name');
@@ -41,15 +42,18 @@ if (onStartButton != null) {
 }
 
 socket.on('chat-message', data => {
-    console.log(data)
+    console.log(data);
+    closeNotifications();
 });
 
 socket.on('user-connected', name => {
-    console.log(`${name} connected to room ${roomName}!`)
+    console.log(`${name} connected to room ${roomName}!`);
+    showAlertOfUserStatuses(true, name);
 });
 
 socket.on('user-disconnected', name => {
-    console.log(`${name} has left the room`)
+    console.log(`${name} has left the room`);
+    showAlertOfUserStatuses(false, name);
 });
 
 socket.on('game-started', message => {

@@ -83,6 +83,7 @@ io.on('connection', socket => {
     socket.on('new-user-name', (room, name) => {
         socket.join(room);
         rooms[room].players[socket.id] = name;
+        const n = Object.keys(rooms[room].players).length;
         socket.to(room).broadcast.emit('user-connected', name)
     })
 
@@ -95,6 +96,7 @@ function getUserRooms(socket) {
         return names
     }, [])
 }
+
 
 function getScoreByMessage(message) {
     return message.split(" ").slice(-2)[0];

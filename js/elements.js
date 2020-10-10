@@ -23,3 +23,7 @@ const brokeARecord = document.getElementById('brokeARecord');
 const writtenWords = document.getElementById('writtenWords');
 const alertWrittenWords = document.getElementById('alertWrittenWords');
 const closeAlert = document.getElementById('closeAlert');
+
+const alertRoomEvents = document.getElementById('alertRoomEvents');
+const alertNotifications = document.getElementById('Notification');
+const closeNotification = document.getElementById('closeNotification');
