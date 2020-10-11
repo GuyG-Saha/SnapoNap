@@ -94,23 +94,25 @@ function restAlertOfWrittenWords() {
 
  function closeNotifications() {
      closeNotification.addEventListener('click', () => {
-         console.log('try to close');
          alertRoomEvents.style.display = 'none';
      });
  }
 
 function showAlertOfUserStatuses(joined, name) {
-        alertRoomEvents.style.display = 'block';
-        let output = '';
+        let delay = 2800;
 
+        let output = '';
         if (joined === true) {
             output = `User ${name} has joined the room!`;
         } else
             output = `User ${name} has left the room!`;
 
-        alertNotifications.innerHTML = output;
-        setTimeout(function () {
-            console.log('setTimeout try to close');
-            alertRoomEvents.style.display = 'none';
-        }, 2800);
+            alertRoomEvents.style.display = 'block';
+            alertNotifications.innerHTML = output;
+
+            console.log(`delay value: ${delay}`);
+            setTimeout(function () {
+                alertRoomEvents.style.display = 'none';
+            }, delay);
 }
+

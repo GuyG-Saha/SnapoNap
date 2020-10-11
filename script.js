@@ -4,6 +4,7 @@ const roomContainer = document.getElementById('room-container');
 
 const playersPerRoom = {};
 
+/* The following condition is to check if user is on game page */
 if (onStartButton != null) {
     const name = prompt('Please enter your name');
     socket.emit('new-user-name', roomName, name);
@@ -41,9 +42,11 @@ if (onStartButton != null) {
     });
 }
 
-socket.on('chat-message', data => {
+socket.on('welcome-message', data => {
     console.log(data);
-    closeNotifications();
+    if (onStartButton != null) {
+        closeNotifications();
+    }
 });
 
 socket.on('user-connected', name => {

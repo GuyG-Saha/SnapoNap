@@ -53,7 +53,7 @@ app.post('/room', (request, response) => {
 
 io.on('connection', socket => {
     console.log(`New user connected with socket id ${socket.id}`);
-    socket.emit('chat-message', `Welcome to SnapONap!`);
+    socket.emit('welcome-message', `Welcome to SnapONap!`);
 
     socket.on('game-started', (room, message) => {
         console.log(`Message from client: ${message}`);
