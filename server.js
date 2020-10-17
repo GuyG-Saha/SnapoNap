@@ -42,7 +42,7 @@ app.post('/room', (request, response) => {
         if (rooms[request.body.room] != null || rooms.length >= MAX_ROOMS) {
             return response.redirect('/')
         }
-        rooms[request.body.room] = { players: {} };
+        rooms[request.body.room] = { players: {}, isBusy: false };
         response.redirect(request.body.room);
         // Emit new message that a new room was created
         io.emit('room-created', request.body.room)
@@ -59,8 +59,13 @@ io.on('connection', socket => {
         console.log(`Message from client: ${message}`);
         socket.join(room);
         const game_starts_message = `Game starts at ${room}!`;
+        rooms[room].isBusy = true;
         socket.to(room).broadcast.emit('game-started', game_starts_message);
         scores[room] = []
+    });
+
+    socket.on('get-room-status', roomName => {
+       console.log(`Get room status for room ${roomName}: ${rooms[roomName].isBusy}`);
     });
 
     socket.on('game-ended', (room, message, socket_id) => {
@@ -68,6 +73,7 @@ io.on('connection', socket => {
         scores[room].push({ Score: getScoreByMessage(message), Socket_Id: socket_id });
         console.log(scores[room]);
         socket.join(room);
+        rooms[room].isBusy = false;
         socket.to(room).broadcast.emit('game-ended', message);
         console.log(getWinningSocketId(scores[room]));
     });
@@ -81,11 +87,16 @@ io.on('connection', socket => {
     });
 
     socket.on('new-user-name', (room, name) => {
+        let isPivot = false;
         socket.join(room);
         rooms[room].players[socket.id] = name;
-        const n = Object.keys(rooms[room].players).length;
-        socket.to(room).broadcast.emit('user-connected', name)
-    })
+        if (Object.keys(rooms[room].players).length === 1) {
+            console.log(`${name} is the Pivot in room ${room}`);
+            isPivot = true;
+        }
+        socket.to(room).broadcast.emit('user-connected', {name: name, isPivot: isPivot} );
+        console.log(rooms[room]);
+    });
 
 });
 

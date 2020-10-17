@@ -11,6 +11,8 @@ if (onStartButton != null) {
 
     onStartButton.addEventListener('click', e => {
         e.preventDefault();
+        socket.emit('get-room-status', roomName);
+
         let message = '';
         if (name == null || name === "") {
             message = `User with socket id ${socket.id} started their game at ${roomName}!`;
@@ -49,9 +51,9 @@ socket.on('welcome-message', data => {
     }
 });
 
-socket.on('user-connected', name => {
-    console.log(`${name} connected to room ${roomName}!`);
-    showAlertOfUserStatuses(true, name);
+socket.on('user-connected', user => {
+    console.log(`${user['name']} connected to room ${roomName}!`);
+    showAlertOfUserStatuses(true, user['name']);
 });
 
 socket.on('user-disconnected', name => {
