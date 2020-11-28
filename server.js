@@ -42,7 +42,7 @@ app.post('/room', (request, response) => {
         if (rooms[request.body.room] != null || rooms.length >= MAX_ROOMS) {
             return response.redirect('/')
         }
-        rooms[request.body.room] = { players: {}, pivotSocketId: null, countFinished: 0 };
+        rooms[request.body.room] = { players: {}, pivotSocketId: null, isBusy: false, countFinished: 0 };
         response.redirect(request.body.room);
         // Emit new message that a new room was created
         io.emit('room-created', request.body.room)
@@ -59,9 +59,14 @@ io.on('connection', socket => {
         console.log(`Message from client: ${message}`);
         socket.join(room);
         const game_starts_message = `Game starts at ${room}!`;
+        rooms[room].isBusy = true;
         socket.to(room).broadcast.emit('game-started', game_starts_message);
         scores[room] = [];
         rooms[room].countFinished = 0;
+    });
+
+    socket.on('get-room-status', roomName => {
+       console.log(`Get room status for room ${roomName}: ${rooms[roomName].isBusy}`);
     });
 
     socket.on('game-ended', (room, message, socket_id) => {
@@ -69,6 +74,7 @@ io.on('connection', socket => {
         scores[room].push({ Score: getScoreByMessage(message), Socket_Id: socket_id });
         console.log(scores[room]);
         socket.join(room);
+        rooms[room].isBusy = false;
         socket.to(room).broadcast.emit('game-ended', message);
         rooms[room].countFinished++;
         let n = Object.keys(rooms[room].players).length;
@@ -107,7 +113,7 @@ io.on('connection', socket => {
             console.log(`This is the pivot user of room ${room}`);
         else
             console.log(`Not the pivot`);
-    })
+    });
 
 });
 
