@@ -98,21 +98,28 @@ function restAlertOfWrittenWords() {
      });
  }
 
-function showAlertOfUserStatuses(joined, name) {
+function showAlertOfUserStatuses(isWin ,joined, name) {
         let delay = 2800;
-
         let output = '';
-        if (joined === true) {
-            output = `User ${name} has joined the room!`;
-        } else
-            output = `User ${name} has left the room!`;
+
+        if (isWin) {
+            output = 'You won!'
+        } else {
+            if (joined === true) {
+                output = `User ${name} has joined the room!`;
+            } else
+                output = `User ${name} has left the room!`;
+        }
 
             alertRoomEvents.style.display = 'block';
             alertNotifications.innerHTML = output;
 
-            console.log(`delay value: ${delay}`);
             setTimeout(function () {
                 alertRoomEvents.style.display = 'none';
             }, delay);
+}
+
+function showWinner(name) {
+    // TBD
 }
 

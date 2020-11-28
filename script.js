@@ -2,7 +2,7 @@ const socket = io('http://localhost:8080');
 const onStartButton = document.getElementById('onStart');
 const roomContainer = document.getElementById('room-container');
 
-const playersPerRoom = {};
+let isPivotPlayer = false;
 
 /* The following condition is to check if user is on game page */
 if (onStartButton != null) {
@@ -19,6 +19,11 @@ if (onStartButton != null) {
         }
         socket.emit('game-started', roomName, message);
     });
+
+    onPro.addEventListener('click', e => {
+        e.preventDefault();
+        socket.emit('is-pivot-player', roomName, socket);
+    })
 
     function emitEndGame() {
         if (name == null || name === "") {
@@ -51,12 +56,17 @@ socket.on('welcome-message', data => {
 
 socket.on('user-connected', name => {
     console.log(`${name} connected to room ${roomName}!`);
-    showAlertOfUserStatuses(true, name);
+    showAlertOfUserStatuses(false, true, name);
 });
 
 socket.on('user-disconnected', name => {
     console.log(`${name} has left the room`);
-    showAlertOfUserStatuses(false, name);
+    showAlertOfUserStatuses(false, false, name);
+});
+
+socket.on('pivot-message', message => {
+    console.log(message);
+    isPivotPlayer = true;
 });
 
 socket.on('game-started', message => {
@@ -66,4 +76,13 @@ socket.on('game-started', message => {
 
 socket.on('game-ended', message => {
     console.log(message);
+});
+
+socket.on('winner-message', message => {
+    console.log(message);
+    showAlertOfUserStatuses(true, false, message);
+});
+
+socket.on('the-winner-is', winnerName => {
+
 });

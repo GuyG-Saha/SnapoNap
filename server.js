@@ -42,7 +42,7 @@ app.post('/room', (request, response) => {
         if (rooms[request.body.room] != null || rooms.length >= MAX_ROOMS) {
             return response.redirect('/')
         }
-        rooms[request.body.room] = { players: {} };
+        rooms[request.body.room] = { players: {}, pivotSocketId: null, countFinished: 0 };
         response.redirect(request.body.room);
         // Emit new message that a new room was created
         io.emit('room-created', request.body.room)
@@ -60,7 +60,8 @@ io.on('connection', socket => {
         socket.join(room);
         const game_starts_message = `Game starts at ${room}!`;
         socket.to(room).broadcast.emit('game-started', game_starts_message);
-        scores[room] = []
+        scores[room] = [];
+        rooms[room].countFinished = 0;
     });
 
     socket.on('game-ended', (room, message, socket_id) => {
@@ -69,7 +70,13 @@ io.on('connection', socket => {
         console.log(scores[room]);
         socket.join(room);
         socket.to(room).broadcast.emit('game-ended', message);
-        console.log(getWinningSocketId(scores[room]));
+        rooms[room].countFinished++;
+        let n = Object.keys(rooms[room].players).length;
+        if (rooms[room].countFinished === n && n > 1) {
+            let winningSocketId = getWinningSocketId(scores[room]);
+            io.to(winningSocketId).emit('winner-message', 'You won!');
+            socket.to(room).broadcast.emit('the-winner-is', rooms[room].players[winningSocketId]);
+        }
     });
 
     socket.on('disconnect', () => {
@@ -81,10 +88,25 @@ io.on('connection', socket => {
     });
 
     socket.on('new-user-name', (room, name) => {
+        let isPivot = false;
         socket.join(room);
         rooms[room].players[socket.id] = name;
-        const n = Object.keys(rooms[room].players).length;
-        socket.to(room).broadcast.emit('user-connected', name)
+        if (Object.keys(rooms[room].players).length === 1) {
+            isPivot = true;
+            console.log(`${name} is the pivot in room ${room}`);
+            rooms[room].pivotSocketId = socket.id;
+            io.to(socket.id).emit('pivot-message', `You are the Pivot of room ${room}! Set the speed and version for games in this room`);
+            console.log(rooms[room]);
+        }
+
+        socket.to(room).emit('user-connected', name, isPivot)
+    });
+
+    socket.on('is-pivot-player', (room, playerSocket) => {
+        if (rooms[room].pivotSocketId === playerSocket.id)
+            console.log(`This is the pivot user of room ${room}`);
+        else
+            console.log(`Not the pivot`);
     })
 
 });
